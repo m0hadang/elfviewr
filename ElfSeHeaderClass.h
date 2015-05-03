@@ -32,7 +32,9 @@ class ElfSeHeaderClass : public HeaderClass<ElfN_Shdr>
     ElfSeHeaderClass();
     ~ElfSeHeaderClass();
     void SetHeader(char* buffer,unsigned long e_shoff, uint16_t e_shentsize, uint16_t e_shnum);
-    void PrintHeader();
+    void SetHeaderMemberList();
+    QList<QString> s_typeStringList;
+    QList< QList<ElfDataType> > s_list;
 };
 
 template<typename ElfN_Shdr>
@@ -59,12 +61,13 @@ void ElfSeHeaderClass<ElfN_Shdr>::SetHeader(char* buffer, unsigned long e_shoff,
 }
 
 template<typename ElfN_Shdr>
-void ElfSeHeaderClass<ElfN_Shdr>::PrintHeader()
+void ElfSeHeaderClass<ElfN_Shdr>::SetHeaderMemberList()
 {
 
     // Set Data : 1.Offset  2.Name  3.Value  4.data size 5.bitInfo
 
     ElfN_Shdr* point = NULL;
+    QString s_typeStr;
     for(int i=0; i<seHeaderNumber; i++)
     {
 
@@ -89,6 +92,12 @@ void ElfSeHeaderClass<ElfN_Shdr>::PrintHeader()
         this->headerMemberList.append(sh_info);
         this->headerMemberList.append(sh_addralign);
         this->headerMemberList.append(sh_entsize);
+
+        s_typeStr.sprintf("[%d] : %x", i, point->sh_type);
+        s_typeStringList.append(s_typeStr);
+        s_list.append(this->headerMemberList);
+
+        this->headerMemberList.clear();
     }
   //dumpcode((unsigned char*)header, totalHeaderSize);
 }

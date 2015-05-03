@@ -45,7 +45,7 @@ class ElfHeaderClass : public HeaderClass<ElfN_Ehdr>
     ElfHeaderClass();
     ~ElfHeaderClass();
     void SetHeader(char* buffer);
-    void PrintHeader();
+    void SetHeaderMemberList();
     //unsigned long CalcurateOffset(void* member, void* header);
 };
 
@@ -81,7 +81,7 @@ void ElfHeaderClass<ElfN_Ehdr>::SetHeader(char* buffer)
 }
 
 template<typename ElfN_Ehdr>
-void ElfHeaderClass<ElfN_Ehdr>::PrintHeader()
+void ElfHeaderClass<ElfN_Ehdr>::SetHeaderMemberList()
 {
   //cout << "ELF_HEADER" << endl;
   //cout << hex << " -HeaderSize : " << headerSize << endl;

@@ -3,6 +3,7 @@
 
 #include <elf.h>
 #include <QList>
+#include <QVector>
 #include "ElfDataType.h"
 #include "HeaderClass.h"
 using namespace std;
@@ -11,6 +12,7 @@ template <typename ElfN_Phdr>
 class ElfPrgHeaderClass : public HeaderClass<ElfN_Phdr>
 {
   private :
+
     ElfDataType p_type;
     ElfDataType p_offset;
     ElfDataType p_vaddr;
@@ -19,13 +21,14 @@ class ElfPrgHeaderClass : public HeaderClass<ElfN_Phdr>
     ElfDataType p_memsz;
     ElfDataType p_flags;
     ElfDataType p_align;
+
     ElfN_Phdr* pHeader;
 
     //ElfN_Phdr* header;
     size_t totalHeaderSize;
     unsigned long prgHeaderOffset;
     uint16_t prgHeaderEntSize;
-    uint16_t prgHeaderNumber;
+
 
 
   public :
@@ -33,7 +36,10 @@ class ElfPrgHeaderClass : public HeaderClass<ElfN_Phdr>
     ElfPrgHeaderClass();
     ~ElfPrgHeaderClass();
     void SetHeader(char* buffer,unsigned long e_phoff, uint16_t e_phentsize, uint16_t e_phnum);
-    void PrintHeader();
+    void SetHeaderMemberList();
+    uint16_t prgHeaderNumber;
+    QList<QString> p_typeStringList;
+    QList< QList<ElfDataType> > p_list;
 };
 
 template<typename ElfN_Phdr>
@@ -60,11 +66,12 @@ void ElfPrgHeaderClass<ElfN_Phdr>::SetHeader(char* buffer, unsigned long e_phoff
 }
 
 template<typename ElfN_Phdr>
-void ElfPrgHeaderClass<ElfN_Phdr>::PrintHeader()
+void ElfPrgHeaderClass<ElfN_Phdr>::SetHeaderMemberList()
 {
   // Set Data : 1.Offset  2.Name  3.Value  4.data size 5.bitInfo
 
   ElfN_Phdr* point = NULL;
+  QString p_typeStr;
   for(int i=0; i<prgHeaderNumber; i++)
   {
     point = pHeader + i;
@@ -77,6 +84,7 @@ void ElfPrgHeaderClass<ElfN_Phdr>::PrintHeader()
     p_memsz.SetData(this->CalcurateOffset(&(point->p_memsz) ,this->baseOffset), "p_memsz", (unsigned long)point->p_memsz, sizeof(point->p_memsz));
     p_flags.SetData(this->CalcurateOffset(&(point->p_flags) ,this->baseOffset), "p_flags", (unsigned long)point->p_flags, sizeof(point->p_flags));
     p_align.SetData(this->CalcurateOffset(&(point->p_align) ,this->baseOffset), "p_align", (unsigned long)point->p_align, sizeof(point->p_align));
+
     this->headerMemberList.append(p_type);
     this->headerMemberList.append(p_offset);
     this->headerMemberList.append(p_vaddr);
@@ -85,6 +93,12 @@ void ElfPrgHeaderClass<ElfN_Phdr>::PrintHeader()
     this->headerMemberList.append(p_memsz);
     this->headerMemberList.append(p_flags);
     this->headerMemberList.append(p_align);
+
+    p_typeStr.sprintf("[%d] : %x", i, point->p_type);
+    p_typeStringList.append(p_typeStr);
+    p_list.append(this->headerMemberList);
+
+    this->headerMemberList.clear();
   }
 
   //dumpcode((unsigned char*)header, totalHeaderSize);

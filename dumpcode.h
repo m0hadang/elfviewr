@@ -15,9 +15,9 @@ int i;
 for(i=0;i<len;i++) 
 { 
   if(i%16==0) 
-    printf("0x%08x  ",i);
+    printf("0x%08x  ",i); //Offset output
 
-  printf("%02x ",buff[i]); 
+  printf("%02x ",buff[i]); //1 byte hex output
   if(i%16-15==0) 
   { 
     int j; 
@@ -33,7 +33,7 @@ if(i%16!=0)
   int j; 
   int spaces=(len-i+16-i%16)*3+2; 
   for(j=0;j<spaces;j++) 
-  printf(" "); 
+  printf(" ");
 
   for(j=i-i%16;j<len;j++) 
     printchar(buff[j]); 

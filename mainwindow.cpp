@@ -6,32 +6,22 @@
 #include <QMessageBox>
 #include <QList>
 #include <QTreeWidgetItem>
+#define HEA_TYPE 0
+#define PRG_TYPE 1
+#define SE_TYPE 2
+#define HEA_LEVEL -1
+#define MEM_LEVEL 0
 
-#include "ElfHeaderClass.h"
-#include "ElfPrgHeaderClass.h"
-#include "ElfSeHeaderClass.h"
-
-#define Col_Offset 0
-#define Col_Member 1
-#define Col_Value 2
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
-    //setting name tree widget
-    ui->treeWidgetName->setColumnCount(1);
-    ui->treeWidgetName->setHeaderLabel("NAME");
-    //setting value tree widget
-    ui->treeWidgetValue->setColumnCount(3);
-    ui->treeWidgetValue->setColumnWidth(0,200);
-    ui->treeWidgetValue->setColumnWidth(1,200);
-    ui->treeWidgetValue->setColumnWidth(2,200);
-    ui->treeWidgetValue->setHeaderLabels(QStringList() << "Offset" << "Member" << "Value");
 
+    NameWidgetColumnMode();
+    ValueWidgetColumnMemberMode();
 
-    char* bufferPoint;
     int bit;
     try
     {
@@ -56,55 +46,43 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
 
-    //ElfHeaderClass<Elf32_Ehdr> elfHeader(new Elf32_Ehdr);
-    ElfHeaderClass<Elf32_Ehdr> elfHeader;
+    //init headers
     elfHeader.SetHeader(bufferPoint);
-    elfHeader.PrintHeader();
-
-    //add name tree widget item
-    AddRootNameWidget(ui->treeWidgetName, "Header");
-
-
-    //add value tree widget item
-    foreach(ElfDataType item, elfHeader.headerMemberList)
-    {
-        //AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
-    }
-
-
-    ElfPrgHeaderClass<Elf32_Phdr> elfPrgHeader;
+    elfHeader.SetHeaderMemberList();
     elfPrgHeader.SetHeader(bufferPoint, elfHeader.prgHeaderOffset, elfHeader.prgHeaderEntSize, elfHeader.prgHeaderNumber);
-    elfPrgHeader.PrintHeader();
-
-    //add name tree widget item
-    AddRootNameWidget(ui->treeWidgetName, "Program header");
-
-    //add value tree widget item
-    foreach(ElfDataType item, elfPrgHeader.headerMemberList)
-    {
-        //AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
-    }
-
-    ElfSeHeaderClass<Elf32_Shdr> elfSeHeader;
+    elfPrgHeader.SetHeaderMemberList();
     elfSeHeader.SetHeader(bufferPoint, elfHeader.seHeaderOffset, elfHeader.seHeaderEntSize, elfHeader.seHeaderNumber);
-    elfSeHeader.PrintHeader();
+    elfSeHeader.SetHeaderMemberList();
+
+    QTreeWidgetItem* topItem;
+    topItem = AddRootNameWidget(ui->treeWidgetName, "a.out");
+    ui->treeWidgetName->expandAll();
 
     //add name tree widget item
-    AddRootNameWidget(ui->treeWidgetName, "Section header");
+    AddChild(0, topItem, "Header");
 
-    //add value tree widget item
-    foreach(ElfDataType item, elfSeHeader.headerMemberList)
+
+
+    //Add Program Header Member in Name Widget
+    QTreeWidgetItem* middleItem = AddChild(0, topItem, "Program Header");
+    foreach(QString item, elfPrgHeader.p_typeStringList)
     {
-        AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
+        AddChild(0, middleItem, item);
+    }
+    //Add Section Header Member in Name Widget
+    middleItem = AddChild(0, topItem, "Section Header");
+    foreach(QString item, elfSeHeader.s_typeStringList)
+    {
+        AddChild(0, middleItem, item);
     }
 
 
-    free(bufferPoint);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    free(bufferPoint);
 }
 
 int MainWindow::ReadFile(char* filename, char* &bufferPoint)
@@ -147,28 +125,122 @@ int MainWindow::ReadFile(char* filename, char* &bufferPoint)
   fclose(fp);
   return bitInfo;
 }
-void MainWindow::AddRootNameWidget(QTreeWidget* view, QString name)
+QTreeWidgetItem* MainWindow::AddRootNameWidget(QTreeWidget* view, QString name)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(view);
     item->setText(0, name);
     view->addTopLevelItem(item);
+
+    return item;
 }
 
-void MainWindow::AddRootValueWidget(QTreeWidget* view, QString offset, QString member, QString value)
+QTreeWidgetItem* MainWindow::AddRootValueWidget(QTreeWidget* view, QString left, QString center, QString right)
 {
 
     QTreeWidgetItem *item = new QTreeWidgetItem(view);
 
-    item->setText(Col_Offset,offset);
-    item->setText(Col_Member, member);
-    item->setText(Col_Value,value);
+    item->setText(0, left);
+    item->setText(1, center);
+    item->setText(2, right);
     view->addTopLevelItem(item);
-
+    return item;
 }
 
-void MainWindow::AddChild(int column, QTreeWidgetItem* parent, QString name)
+QTreeWidgetItem* MainWindow::AddChild(int column, QTreeWidgetItem* parent, QString name)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem();
     item->setText(column,name);
     parent->addChild(item);
+    return item;
+}
+
+
+
+
+void MainWindow::NameWidgetColumnMode()
+{
+    //setting name tree widget
+    ui->treeWidgetName->setColumnCount(1);
+    ui->treeWidgetName->setHeaderLabel("NAME");
+}
+
+void MainWindow::ValueWidgetColumnMemberMode()
+{
+    //setting value widget in Member Mode
+    ui->treeWidgetValue->setColumnCount(3);
+    ui->treeWidgetValue->setColumnWidth(0,200);
+    ui->treeWidgetValue->setColumnWidth(1,200);
+    ui->treeWidgetValue->setColumnWidth(2,200);
+    ui->treeWidgetValue->setHeaderLabels(QStringList() << "Offset" << "Member" << "Value");
+}
+void MainWindow::ValueWidgetColumnHexMode()
+{
+    //setting value widget in Hex Mode
+    ui->treeWidgetValue->setColumnCount(3);
+    ui->treeWidgetValue->setColumnWidth(0,200);
+    ui->treeWidgetValue->setColumnWidth(1,400);
+    ui->treeWidgetValue->setColumnWidth(2,200);
+    ui->treeWidgetValue->setHeaderLabels(QStringList() << "Offset" << "Hex" << "Asci");
+}
+
+void MainWindow::on_treeWidgetName_itemSelectionChanged()
+{
+    ui->treeWidgetValue->clear();
+    const QModelIndex index = ui->treeWidgetName->currentIndex();
+    bool notRootItem = index.parent().isValid();
+
+    int row = index.row();
+    if(notRootItem)
+    {
+        int itemLevel = index.parent().parent().row();
+        switch(itemLevel)
+        {
+        case HEA_LEVEL:
+            switch(row)
+            {
+            case HEA_TYPE:
+                //add value tree widget item
+                foreach(ElfDataType item, elfHeader.headerMemberList)
+                {
+                    AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
+                }
+                break;
+            case PRG_TYPE:
+                break;
+            case SE_TYPE:
+                break;
+            }
+
+            break;
+
+        case MEM_LEVEL:
+            int headerType = index.parent().row();
+            switch(headerType)
+            {
+                case HEA_TYPE:
+
+                break;
+
+                case PRG_TYPE:
+                    //add value tree widget item
+                    foreach(ElfDataType item, elfPrgHeader.p_list[row])
+                    {
+                        AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
+                    }
+                    break;
+                case SE_TYPE:
+                    //add value tree widget item
+                    foreach(ElfDataType item, elfSeHeader.s_list[row])
+                    {
+                        AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
+                    }
+                    break;
+            }
+            break;
+        }
+    }
+    else//all hex print
+    {
+
+    }
 }
