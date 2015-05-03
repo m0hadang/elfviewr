@@ -20,6 +20,8 @@ HEADERS  += mainwindow.h \
     dumpcode.h \
     ElfDataType.h \
     ElfHeaderClass.h \
-    HeaderClass.h
+    HeaderClass.h \
+    ElfPrgHeaderClass.h \
+    ElfSeHeaderClass.h
 
 FORMS    += mainwindow.ui

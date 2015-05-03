@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>927</width>
-    <height>589</height>
+    <width>1055</width>
+    <height>633</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,6 +21,12 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <widget class="QTreeWidget" name="treeWidgetName">
+       <property name="maximumSize">
+        <size>
+         <width>300</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="columnCount">
         <number>1</number>
        </property>
@@ -46,7 +52,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>927</width>
+     <width>1055</width>
      <height>25</height>
     </rect>
    </property>

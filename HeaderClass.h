@@ -1,40 +1,37 @@
 #ifndef HEADERCLASS_H
 #define HEADERCLASS_H
-
-template <typename ElfN_Ehdr>
+#include <QList>
+template <typename ElfN_Hdr>
 class HeaderClass
 {
 protected :
   size_t headerSize;
-  int bitInfo;
-  ElfN_Ehdr* header;
+  void* baseOffset;
 
 public :
   QList<ElfDataType> headerMemberList;
-  //Program Header Information
-  unsigned long prgHeaderOffset;
-  uint16_t prgHeaderEntSize;
-  uint16_t prgHeaderNumber;
 
-  //Section Header Information
-  unsigned long seHeaderOffset;
-  uint16_t seHeaderEntSize;
-  uint16_t seHeaderNumber;
-
-  HeaderClass(int _bitInfo);
+  HeaderClass();
   //~HeaderClass();
+  void SetHeader(char* buffer);
+  void SetHeader(char* buffer, unsigned long e_phoff, uint16_t e_phentsize, uint16_t e_phnum);
+  /*
   virtual void SetHeader(char* buffer) = 0;
+  virtual void SetHeader(char* buffer, unsigned long e_phoff, uint16_t e_phentsize, uint16_t e_phnum) = 0;
+  */
   virtual void PrintHeader() = 0;
   unsigned long CalcurateOffset(void* member, void* header);
 
 };
-template<typename ElfN_Ehdr>
-HeaderClass<ElfN_Ehdr>::HeaderClass(int _bitInfo)
+
+
+template<typename ElfN_Hdr>
+HeaderClass<ElfN_Hdr>::HeaderClass()
 {
-    bitInfo = _bitInfo;
+
 }
-template<typename ElfN_Ehdr>
-unsigned long HeaderClass<ElfN_Ehdr>::CalcurateOffset(void* member, void* header)
+template<typename ElfN_Hdr>
+unsigned long HeaderClass<ElfN_Hdr>::CalcurateOffset(void* member, void* header)
 {
     return (unsigned long) ((unsigned char*)member - (unsigned char*) header);
 }

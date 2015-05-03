@@ -1,17 +1,18 @@
 #include "ElfDataType.h"
 #include "elf.h"
+
 ElfDataType::ElfDataType()
 {
 
 }
+int ElfDataType::bitInfo = 0;
 
-
-void ElfDataType::SetData(unsigned long _rawOffset, QString _memberName, unsigned long _rawValue,int _dataLen ,int _bitInfo)
+void ElfDataType::SetData(unsigned long _rawOffset, QString _memberName, unsigned long _rawValue,int _dataLen)
 {
     rawOffset = _rawOffset;
 
     //Offset Setting
-    switch(_bitInfo)
+    switch(bitInfo)
     {
       case ELFCLASS32:
         memberOffset.sprintf("0x%08x",(unsigned int) _rawOffset);
@@ -46,3 +47,4 @@ void ElfDataType::SetData(unsigned long _rawOffset, QString _memberName, unsigne
 
     dataLen = _dataLen;
 }
+

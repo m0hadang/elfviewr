@@ -4,9 +4,13 @@
 #include <stdio.h>
 #include <elf.h>
 #include <QMessageBox>
-#include "ElfHeaderClass.h"
 #include <QList>
 #include <QTreeWidgetItem>
+
+#include "ElfHeaderClass.h"
+#include "ElfPrgHeaderClass.h"
+#include "ElfSeHeaderClass.h"
+
 #define Col_Offset 0
 #define Col_Member 1
 #define Col_Value 2
@@ -15,21 +19,35 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    //setting name tree widget
+    ui->treeWidgetName->setColumnCount(1);
+    ui->treeWidgetName->setHeaderLabel("NAME");
+    //setting value tree widget
+    ui->treeWidgetValue->setColumnCount(3);
+    ui->treeWidgetValue->setColumnWidth(0,200);
+    ui->treeWidgetValue->setColumnWidth(1,200);
+    ui->treeWidgetValue->setColumnWidth(2,200);
+    ui->treeWidgetValue->setHeaderLabels(QStringList() << "Offset" << "Member" << "Value");
+
+
     char* bufferPoint;
-    int bitInfo;
+    int bit;
     try
     {
-        bitInfo = ReadFile("/home/red/a.out", bufferPoint);
+        bit = ReadFile("/home/red/a.out", bufferPoint);
     } catch(...){
         QMessageBox::information(this, "File open error", "File open error");
     }
 
-    switch(bitInfo)
+    switch(bit)
     {
       case ELFCLASS32:
         //QMessageBox::information(this, "32bit ELF", "this is 32bit elf");
+        ElfDataType::SetBitInfo(ELFCLASS32);
         break;
       case ELFCLASS64:
+        ElfDataType::SetBitInfo(ELFCLASS64);
         //QMessageBox::information(this, "64bit ELF", "this is 64bit elf");
         break;
       default:
@@ -37,31 +55,48 @@ MainWindow::MainWindow(QWidget *parent) :
         break;
     }
 
+
     //ElfHeaderClass<Elf32_Ehdr> elfHeader(new Elf32_Ehdr);
-    ElfHeaderClass<Elf32_Ehdr> elfHeader(bitInfo);
+    ElfHeaderClass<Elf32_Ehdr> elfHeader;
     elfHeader.SetHeader(bufferPoint);
     elfHeader.PrintHeader();
 
-    ui->treeWidgetName->setColumnCount(1);
-    ui->treeWidgetName->setHeaderLabel("NAME");
-
-    ui->treeWidgetValue->setColumnCount(3);
-    ui->treeWidgetValue->setHeaderLabels(QStringList() << "Offset" << "Member" << "Value");
-
+    //add name tree widget item
     AddRootNameWidget(ui->treeWidgetName, "Header");
+
+
+    //add value tree widget item
     foreach(ElfDataType item, elfHeader.headerMemberList)
     {
-        AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
+        //AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
     }
 
 
-    //ElfPrgHeaderClass<Elf32_Phdr> elfPrgHeader;
-    //elfPrgHeader.SetHeader(bufferPoint, elfHeader.prgHeaderOffset, elfHeader.prgHeaderEntSize, elfHeader.prgHeaderNumber);
-    //elfPrgHeader.PrintHeader();
+    ElfPrgHeaderClass<Elf32_Phdr> elfPrgHeader;
+    elfPrgHeader.SetHeader(bufferPoint, elfHeader.prgHeaderOffset, elfHeader.prgHeaderEntSize, elfHeader.prgHeaderNumber);
+    elfPrgHeader.PrintHeader();
 
-    //ElfSeHeaderClass<Elf32_Shdr> elfSeHeader;
-    //elfSeHeader.SetHeader(bufferPoint, elfHeader.seHeaderOffset, elfHeader.seHeaderEntSize, elfHeader.seHeaderNumber);
-    //elfSeHeader.PrintHeader();
+    //add name tree widget item
+    AddRootNameWidget(ui->treeWidgetName, "Program header");
+
+    //add value tree widget item
+    foreach(ElfDataType item, elfPrgHeader.headerMemberList)
+    {
+        //AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
+    }
+
+    ElfSeHeaderClass<Elf32_Shdr> elfSeHeader;
+    elfSeHeader.SetHeader(bufferPoint, elfHeader.seHeaderOffset, elfHeader.seHeaderEntSize, elfHeader.seHeaderNumber);
+    elfSeHeader.PrintHeader();
+
+    //add name tree widget item
+    AddRootNameWidget(ui->treeWidgetName, "Section header");
+
+    //add value tree widget item
+    foreach(ElfDataType item, elfSeHeader.headerMemberList)
+    {
+        AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
+    }
 
 
     free(bufferPoint);

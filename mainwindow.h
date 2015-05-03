@@ -18,10 +18,9 @@ public:
     void AddRootNameWidget(QTreeWidget* view, QString name);
     void AddRootValueWidget(QTreeWidget* view, QString offset, QString member, QString value);
     void AddChild(int column, QTreeWidgetItem* parent, QString name);
+
 private:
     Ui::MainWindow *ui;
 };
 
 #endif // MAINWINDOW_H
-
-

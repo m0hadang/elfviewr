@@ -1,8 +1,6 @@
 #ifndef ELFPRGHEADERCLASS_H
 #define ELFPRGHEADERCLASS_H
 
-#include <stdio.h>
-#include <iostream>
 #include <elf.h>
 #include <QList>
 #include "ElfDataType.h"
@@ -53,7 +51,7 @@ void ElfPrgHeaderClass<ElfN_Phdr>::SetHeader(char* buffer, unsigned long e_phoff
 {
    this->baseOffset = buffer;
 
-  //프로그램 헤더를 가르킨다.
+  //Program 헤더를 가르킨다.
   pHeader = (ElfN_Phdr*)&buffer[e_phoff];
   totalHeaderSize = e_phentsize * e_phnum;
   prgHeaderOffset = e_phoff;
