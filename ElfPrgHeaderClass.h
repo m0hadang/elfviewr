@@ -27,7 +27,7 @@ class ElfPrgHeaderClass : public HeaderClass<ElfN_Phdr>
     //ElfN_Phdr* header;
     size_t totalHeaderSize;
     unsigned long prgHeaderOffset;
-    uint16_t prgHeaderEntSize;
+    //uint16_t prgHeaderEntSize;
 
 
 
@@ -40,6 +40,9 @@ class ElfPrgHeaderClass : public HeaderClass<ElfN_Phdr>
     uint16_t prgHeaderNumber;
     QList<QString> p_typeStringList;
     QList< QList<ElfDataType> > p_list;
+    ElfN_Phdr* GetHeader();
+    size_t GetTotalSize();
+    size_t GetOffset();
 };
 
 template<typename ElfN_Phdr>
@@ -53,6 +56,24 @@ ElfPrgHeaderClass<ElfN_Phdr>::~ElfPrgHeaderClass()
 }
 
 template<typename ElfN_Phdr>
+ElfN_Phdr* ElfPrgHeaderClass<ElfN_Phdr>::GetHeader()
+{
+    return pHeader;
+}
+
+template<typename ElfN_Phdr>
+size_t ElfPrgHeaderClass<ElfN_Phdr>::GetTotalSize()
+{
+    return totalHeaderSize;
+}
+
+template<typename ElfN_Phdr>
+size_t ElfPrgHeaderClass<ElfN_Phdr>::GetOffset()
+{
+    return prgHeaderOffset;
+}
+
+template<typename ElfN_Phdr>
 void ElfPrgHeaderClass<ElfN_Phdr>::SetHeader(char* buffer, unsigned long e_phoff, uint16_t e_phentsize, uint16_t e_phnum)
 {
    this->baseOffset = buffer;
@@ -61,7 +82,7 @@ void ElfPrgHeaderClass<ElfN_Phdr>::SetHeader(char* buffer, unsigned long e_phoff
   pHeader = (ElfN_Phdr*)&buffer[e_phoff];
   totalHeaderSize = e_phentsize * e_phnum;
   prgHeaderOffset = e_phoff;
-  prgHeaderEntSize = e_phentsize;
+  //prgHeaderEntSize = e_phentsize;
   prgHeaderNumber = e_phnum;
 }
 

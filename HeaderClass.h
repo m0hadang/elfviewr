@@ -20,6 +20,8 @@ public :
   virtual void SetHeader(char* buffer, unsigned long e_phoff, uint16_t e_phentsize, uint16_t e_phnum) = 0;
   */
   virtual void SetHeaderMemberList() = 0;
+  virtual size_t GetTotalSize() = 0;
+  virtual size_t GetOffset() = 0;
   unsigned long CalcurateOffset(void* member, void* header);
 
 };

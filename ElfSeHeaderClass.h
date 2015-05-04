@@ -26,16 +26,36 @@ class ElfSeHeaderClass : public HeaderClass<ElfN_Shdr>
     ElfN_Shdr* sHeader;
     size_t totalHeaderSize;
     unsigned long seHeaderOffset;
-    uint16_t seHeaderEntSize;
+    //uint16_t seHeaderEntSize;
     uint16_t seHeaderNumber;
   public :
     ElfSeHeaderClass();
     ~ElfSeHeaderClass();
     void SetHeader(char* buffer,unsigned long e_shoff, uint16_t e_shentsize, uint16_t e_shnum);
     void SetHeaderMemberList();
+    ElfN_Shdr* GetHeader();
+    size_t GetTotalSize();
+    size_t GetOffset();
     QList<QString> s_typeStringList;
     QList< QList<ElfDataType> > s_list;
 };
+template<typename ElfN_Shdr>
+ElfN_Shdr* ElfSeHeaderClass<ElfN_Shdr>::GetHeader()
+{
+    return sHeader;
+}
+
+template<typename ElfN_Shdr>
+size_t ElfSeHeaderClass<ElfN_Shdr>::GetTotalSize()
+{
+    return totalHeaderSize;
+}
+
+template<typename ElfN_Shdr>
+size_t ElfSeHeaderClass<ElfN_Shdr>::GetOffset()
+{
+    return seHeaderOffset;
+}
 
 template<typename ElfN_Shdr>
 ElfSeHeaderClass<ElfN_Shdr>::ElfSeHeaderClass()
@@ -56,7 +76,7 @@ void ElfSeHeaderClass<ElfN_Shdr>::SetHeader(char* buffer, unsigned long e_shoff,
   sHeader = (ElfN_Shdr*)&buffer[e_shoff];
   totalHeaderSize = e_shentsize * e_shnum;
   seHeaderOffset = e_shoff;
-  seHeaderEntSize = e_shentsize;
+  //seHeaderEntSize = e_shentsize;
   seHeaderNumber = e_shnum;
 }
 

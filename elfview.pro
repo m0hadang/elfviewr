@@ -17,7 +17,6 @@ SOURCES += main.cpp\
     ElfDataType.cpp
 
 HEADERS  += mainwindow.h \
-    dumpcode.h \
     ElfDataType.h \
     ElfHeaderClass.h \
     HeaderClass.h \

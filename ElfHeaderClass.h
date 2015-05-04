@@ -46,9 +46,29 @@ class ElfHeaderClass : public HeaderClass<ElfN_Ehdr>
     ~ElfHeaderClass();
     void SetHeader(char* buffer);
     void SetHeaderMemberList();
+    ElfN_Ehdr* GetHeader();
+    size_t GetTotalSize();
+    size_t GetOffset();
     //unsigned long CalcurateOffset(void* member, void* header);
 };
 
+template<typename ElfN_Ehdr>
+ElfN_Ehdr* ElfHeaderClass<ElfN_Ehdr>::GetHeader()
+{
+    return eHeader;
+}
+
+template<typename ElfN_Ehdr>
+size_t ElfHeaderClass<ElfN_Ehdr>::GetTotalSize()
+{
+    return sizeof(ElfN_Ehdr);
+}
+
+template<typename ElfN_Ehdr>
+size_t ElfHeaderClass<ElfN_Ehdr>::GetOffset()
+{
+    return 0;
+}
 
 template<typename ElfN_Ehdr>
 ElfHeaderClass<ElfN_Ehdr>::ElfHeaderClass() : HeaderClass<ElfN_Ehdr>()

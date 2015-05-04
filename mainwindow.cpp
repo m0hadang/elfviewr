@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     int bit;
     try
     {
-        bit = ReadFile("/home/red/a.out", bufferPoint);
+        bit = ReadFile((char*)"/home/red/a.out");
     } catch(...){
         QMessageBox::information(this, "File open error", "File open error");
     }
@@ -84,8 +84,8 @@ MainWindow::~MainWindow()
     delete ui;
     free(bufferPoint);
 }
-
-int MainWindow::ReadFile(char* filename, char* &bufferPoint)
+//, char* &bufferPoint
+int MainWindow::ReadFile(char* filename)
 {
   FILE* fp;
   fp = fopen(filename,"rb");
@@ -95,7 +95,7 @@ int MainWindow::ReadFile(char* filename, char* &bufferPoint)
     exit(1);
   }
 //GET FILE SIZE
-  size_t fileSize;
+  //size_t fileSize;
   fseek(fp, 0, SEEK_END);
   fileSize = ftell(fp);
   rewind(fp);
@@ -157,6 +157,7 @@ QTreeWidgetItem* MainWindow::AddChild(int column, QTreeWidgetItem* parent, QStri
 
 
 
+
 void MainWindow::NameWidgetColumnMode()
 {
     //setting name tree widget
@@ -205,12 +206,15 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
                     AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
                 }
                 break;
+
             case PRG_TYPE:
+                dumpcode((unsigned char*)elfPrgHeader.GetHeader(), elfPrgHeader.GetTotalSize(), elfPrgHeader.GetOffset());
                 break;
+
             case SE_TYPE:
+                dumpcode((unsigned char*)elfSeHeader.GetHeader(), elfSeHeader.GetTotalSize(), elfSeHeader.GetOffset());
                 break;
             }
-
             break;
 
         case MEM_LEVEL:
@@ -228,6 +232,7 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
                         AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
                     }
                     break;
+
                 case SE_TYPE:
                     //add value tree widget item
                     foreach(ElfDataType item, elfSeHeader.s_list[row])
@@ -241,6 +246,56 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
     }
     else//all hex print
     {
+        dumpcode((unsigned char*)bufferPoint, fileSize, elfHeader.GetOffset());
+    }
+}
 
+unsigned char MainWindow::printchar(unsigned char c)
+{
+    if(isprint(c))
+      return c;
+    else
+      return '.';
+}
+
+void MainWindow::dumpcode(unsigned char *buff, size_t len, size_t base)
+{
+    ValueWidgetColumnHexMode();
+
+    QString offset;
+    QString hex;
+    QString asci;
+    QString temp;
+    size_t i;
+    for(i=0;i<len;i++)
+    {
+      if(i%16==0)
+        offset.sprintf("0x%08x  ",i + base); //Offset output
+
+      temp.sprintf("%02x  ",buff[i]);
+      hex.append(temp); //1 byte hex output
+      if(i%16-15==0)
+      {
+        size_t j;
+        for(j=i-15;j<=i;j++)
+        {
+          temp.sprintf("%c ",printchar(buff[j]));
+          asci.append(temp); //Asci output
+        }
+
+        AddRootValueWidget(ui->treeWidgetValue, offset,  hex, asci);
+        offset.clear();
+        hex.clear();
+        asci.clear();
+      }
+    }
+
+    if(i%16!=0)
+    {
+      size_t j;
+
+      for(j=i-i%16;j<len;j++)
+        asci.append(printchar(buff[j])); // Asci output
+      AddRootValueWidget(ui->treeWidgetValue, offset,  hex, asci);
     }
 }
