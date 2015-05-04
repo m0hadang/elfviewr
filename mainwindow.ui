@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1055</width>
-    <height>633</height>
+    <width>1146</width>
+    <height>683</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,14 +32,14 @@
        </property>
        <column>
         <property name="text">
-         <string notr="true">1</string>
+         <string>ELF</string>
         </property>
        </column>
       </widget>
       <widget class="QTreeWidget" name="treeWidgetValue">
        <column>
         <property name="text">
-         <string notr="true">1</string>
+         <string>VIEWR</string>
         </property>
        </column>
       </widget>
@@ -52,20 +52,40 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1055</width>
+     <width>1146</width>
      <height>25</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <addaction name="menuFile"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
-    <enum>LeftToolBarArea</enum>
+    <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>false</bool>
+    <bool>true</bool>
    </attribute>
+   <addaction name="actionOpen"/>
+   <addaction name="actionExit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

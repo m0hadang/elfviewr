@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QList>
 #include <QTreeWidgetItem>
+#include "Fileopendialog.h"
 #define HEA_TYPE 0
 #define PRG_TYPE 1
 #define SE_TYPE 2
@@ -17,15 +18,28 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    //LoadFile();
+}
 
+MainWindow::~MainWindow()
+{
+    delete ui;
+    free(bufferPoint);
+}
 
+void MainWindow::LoadFile()
+{
     NameWidgetColumnMode();
-    ValueWidgetColumnMemberMode();
+    ValueWidgetColumnHexMode();
 
     int bit;
     try
     {
-        bit = ReadFile((char*)"/home/red/a.out");
+        char* str = (char*)malloc(filePath.size()+2);
+        memset(str,0,filePath.size()+2);
+        memcpy(str, filePath.toStdString().c_str(), filePath.size()+2);
+        bit = ReadFile(str);
+        free(str);
     } catch(...){
         QMessageBox::information(this, "File open error", "File open error");
     }
@@ -41,8 +55,8 @@ MainWindow::MainWindow(QWidget *parent) :
         //QMessageBox::information(this, "64bit ELF", "this is 64bit elf");
         break;
       default:
-        //QMessageBox::information(this, "wrong ELF", "this is wrong elf");
-        break;
+        QMessageBox::information(this, "wrong ELF", "this is wrong elf");
+        return;
     }
 
 
@@ -55,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
     elfSeHeader.SetHeaderMemberList();
 
     QTreeWidgetItem* topItem;
-    topItem = AddRootNameWidget(ui->treeWidgetName, "a.out");
+    topItem = AddRootNameWidget(ui->treeWidgetName, fileName);
     ui->treeWidgetName->expandAll();
 
     //add name tree widget item
@@ -75,15 +89,9 @@ MainWindow::MainWindow(QWidget *parent) :
     {
         AddChild(0, middleItem, item);
     }
-
-
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-    free(bufferPoint);
-}
+
 //, char* &bufferPoint
 int MainWindow::ReadFile(char* filename)
 {
@@ -91,7 +99,7 @@ int MainWindow::ReadFile(char* filename)
   fp = fopen(filename,"rb");
   if(fp==NULL)
   {
-    fputs("File error", stderr);
+    QMessageBox::information(this,"File error","File Open Error");
     exit(1);
   }
 //GET FILE SIZE
@@ -197,33 +205,35 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
         switch(itemLevel)
         {
         case HEA_LEVEL:
+            ValueWidgetColumnHexMode();
             switch(row)
             {
-            case HEA_TYPE:
-                //add value tree widget item
-                foreach(ElfDataType item, elfHeader.headerMemberList)
-                {
-                    AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
-                }
-                break;
+                case HEA_TYPE:
+                    //add value tree widget item
+                    foreach(ElfDataType item, elfHeader.headerMemberList)
+                    {
+                        AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
+                    }
+                    break;
 
-            case PRG_TYPE:
-                dumpcode((unsigned char*)elfPrgHeader.GetHeader(), elfPrgHeader.GetTotalSize(), elfPrgHeader.GetOffset());
-                break;
+                case PRG_TYPE:
+                    dumpcode((unsigned char*)elfPrgHeader.GetHeader(), elfPrgHeader.GetTotalSize(), elfPrgHeader.GetOffset());
+                    break;
 
-            case SE_TYPE:
-                dumpcode((unsigned char*)elfSeHeader.GetHeader(), elfSeHeader.GetTotalSize(), elfSeHeader.GetOffset());
-                break;
+                case SE_TYPE:
+                    dumpcode((unsigned char*)elfSeHeader.GetHeader(), elfSeHeader.GetTotalSize(), elfSeHeader.GetOffset());
+                    break;
             }
             break;
 
         case MEM_LEVEL:
+            ValueWidgetColumnMemberMode();
             int headerType = index.parent().row();
             switch(headerType)
             {
                 case HEA_TYPE:
-
-                break;
+                //EMPTRY
+                    break;
 
                 case PRG_TYPE:
                     //add value tree widget item
@@ -260,7 +270,7 @@ unsigned char MainWindow::printchar(unsigned char c)
 
 void MainWindow::dumpcode(unsigned char *buff, size_t len, size_t base)
 {
-    ValueWidgetColumnHexMode();
+
 
     QString offset;
     QString hex;
@@ -298,4 +308,26 @@ void MainWindow::dumpcode(unsigned char *buff, size_t len, size_t base)
         asci.append(printchar(buff[j])); // Asci output
       AddRootValueWidget(ui->treeWidgetValue, offset,  hex, asci);
     }
+}
+
+void MainWindow::on_actionOpen_triggered()
+{
+    FileOpenDialog mDialog;
+    mDialog.setModal(true);
+    mDialog.exec();
+    filePath = mDialog.filePath;
+    fileName = mDialog.fileName;
+
+    if(filePath == "")
+    {
+        QMessageBox::information(this, "NO FILE", "THE FILE IS NOT EXIST");
+        return ;
+    }
+    LoadFile();
+
+}
+
+void MainWindow::on_actionExit_triggered()
+{
+    close();
 }

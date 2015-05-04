@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTreeWidgetItem>
+#include <QString>
 #include "ElfHeaderClass.h"
 #include "ElfPrgHeaderClass.h"
 #include "ElfSeHeaderClass.h"
@@ -23,6 +24,7 @@ public:
     QTreeWidgetItem* AddChild(int column, QTreeWidgetItem* parent, QString name);
 
     //Column setting
+    void LoadFile();
     void NameWidgetColumnMode();
     void ValueWidgetColumnHexMode();
     void ValueWidgetColumnMemberMode();
@@ -32,6 +34,10 @@ public:
 private slots:
     void on_treeWidgetName_itemSelectionChanged();
 
+    void on_actionOpen_triggered();
+
+    void on_actionExit_triggered();
+
 private:
     Ui::MainWindow *ui;
     char* bufferPoint;
@@ -39,6 +45,8 @@ private:
     ElfHeaderClass<Elf32_Ehdr> elfHeader;
     ElfPrgHeaderClass<Elf32_Phdr> elfPrgHeader;
     ElfSeHeaderClass<Elf32_Shdr> elfSeHeader;
+    QString filePath;
+    QString fileName;
 };
 
 #endif // MAINWINDOW_H

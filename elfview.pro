@@ -14,13 +14,16 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    ElfDataType.cpp
+    ElfDataType.cpp \
+    Fileopendialog.cpp
 
 HEADERS  += mainwindow.h \
     ElfDataType.h \
     ElfHeaderClass.h \
     HeaderClass.h \
     ElfPrgHeaderClass.h \
-    ElfSeHeaderClass.h
+    ElfSeHeaderClass.h \
+    Fileopendialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    Fileopendialog.ui
