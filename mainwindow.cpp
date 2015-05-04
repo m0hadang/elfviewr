@@ -18,7 +18,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //LoadFile();
 }
 
 MainWindow::~MainWindow()
@@ -47,17 +46,24 @@ void MainWindow::LoadFile()
     switch(bit)
     {
       case ELFCLASS32:
-        //QMessageBox::information(this, "32bit ELF", "this is 32bit elf");
+        QMessageBox::information(this, "32bit ELF", "this is 32bit elf");
         ElfDataType::SetBitInfo(ELFCLASS32);
+
+
         break;
+
       case ELFCLASS64:
         ElfDataType::SetBitInfo(ELFCLASS64);
-        //QMessageBox::information(this, "64bit ELF", "this is 64bit elf");
+        QMessageBox::information(this, "64bit ELF", "this is 64bit elf");
         break;
+
       default:
         QMessageBox::information(this, "wrong ELF", "this is wrong elf");
         return;
     }
+
+   temp1->SetHeader(bufferPoint);
+   temp1->SetHeaderMemberList();
 
 
     //init headers
@@ -75,8 +81,6 @@ void MainWindow::LoadFile()
     //add name tree widget item
     AddChild(0, topItem, "Header");
 
-
-
     //Add Program Header Member in Name Widget
     QTreeWidgetItem* middleItem = AddChild(0, topItem, "Program Header");
     foreach(QString item, elfPrgHeader.p_typeStringList)
@@ -89,6 +93,7 @@ void MainWindow::LoadFile()
     {
         AddChild(0, middleItem, item);
     }
+
 }
 
 
@@ -161,10 +166,6 @@ QTreeWidgetItem* MainWindow::AddChild(int column, QTreeWidgetItem* parent, QStri
     parent->addChild(item);
     return item;
 }
-
-
-
-
 
 void MainWindow::NameWidgetColumnMode()
 {

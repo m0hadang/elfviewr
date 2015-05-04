@@ -10,9 +10,9 @@ FileOpenDialog::FileOpenDialog(QWidget *parent) :
     model = new QDirModel(this);
     model->setReadOnly(true);
     model->setSorting(QDir::DirsFirst | QDir::IgnoreCase | QDir::Name);
-
     ui->treeView->setModel(model);
-
+    QModelIndex index = model->index("/");
+    ui->treeView->expand(index);
 
 }
 

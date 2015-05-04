@@ -7,6 +7,7 @@
 #include "ElfHeaderClass.h"
 #include "ElfPrgHeaderClass.h"
 #include "ElfSeHeaderClass.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -45,6 +46,13 @@ private:
     ElfHeaderClass<Elf32_Ehdr> elfHeader;
     ElfPrgHeaderClass<Elf32_Phdr> elfPrgHeader;
     ElfSeHeaderClass<Elf32_Shdr> elfSeHeader;
+    ElfHeaderClass<Elf64_Ehdr> elf64Header;
+    ElfPrgHeaderClass<Elf64_Phdr> elf64PrgHeader;
+    ElfSeHeaderClass<Elf64_Shdr> elf64SeHeader;
+
+    ElfHeaderClass<Elf32_Ehdr>* temp1;
+    ElfHeaderClass<Elf64_Ehdr>* temp2;
+
     QString filePath;
     QString fileName;
 };
