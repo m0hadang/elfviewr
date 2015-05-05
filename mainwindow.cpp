@@ -18,6 +18,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    //32bit
+    elf32Header = new ElfHeaderClass<Elf32_Ehdr>;
+    elf32PrgHeader = new ElfPrgHeaderClass<Elf32_Phdr>;
+    elf32SeHeader = new ElfSeHeaderClass<Elf32_Shdr>;
+    //64bit
+    elf64Header = new ElfHeaderClass<Elf64_Ehdr>;
+    elf64PrgHeader = new ElfPrgHeaderClass<Elf64_Phdr>;
+    elf64SeHeader = new ElfSeHeaderClass<Elf64_Shdr>;
 }
 
 MainWindow::~MainWindow()
@@ -31,25 +39,22 @@ void MainWindow::LoadFile()
     NameWidgetColumnMode();
     ValueWidgetColumnHexMode();
 
-    int bit;
     try
     {
         char* str = (char*)malloc(filePath.size()+2);
         memset(str,0,filePath.size()+2);
         memcpy(str, filePath.toStdString().c_str(), filePath.size()+2);
-        bit = ReadFile(str);
+        bitInfo = ReadFile(str);
         free(str);
     } catch(...){
         QMessageBox::information(this, "File open error", "File open error");
     }
 
-    switch(bit)
+    switch(bitInfo)
     {
       case ELFCLASS32:
         QMessageBox::information(this, "32bit ELF", "this is 32bit elf");
         ElfDataType::SetBitInfo(ELFCLASS32);
-
-
         break;
 
       case ELFCLASS64:
@@ -62,17 +67,14 @@ void MainWindow::LoadFile()
         return;
     }
 
-   temp1->SetHeader(bufferPoint);
-   temp1->SetHeaderMemberList();
-
-
     //init headers
-    elfHeader.SetHeader(bufferPoint);
-    elfHeader.SetHeaderMemberList();
-    elfPrgHeader.SetHeader(bufferPoint, elfHeader.prgHeaderOffset, elfHeader.prgHeaderEntSize, elfHeader.prgHeaderNumber);
-    elfPrgHeader.SetHeaderMemberList();
-    elfSeHeader.SetHeader(bufferPoint, elfHeader.seHeaderOffset, elfHeader.seHeaderEntSize, elfHeader.seHeaderNumber);
-    elfSeHeader.SetHeaderMemberList();
+
+    SetEHeader();
+    SetEHeaderMemberList();
+    SetPrgHeader();
+    SetPrgHeaderMemberList();
+    SetSeHeader();
+    SetSeHeaderMemberList();
 
     QTreeWidgetItem* topItem;
     topItem = AddRootNameWidget(ui->treeWidgetName, fileName);
@@ -83,20 +85,230 @@ void MainWindow::LoadFile()
 
     //Add Program Header Member in Name Widget
     QTreeWidgetItem* middleItem = AddChild(0, topItem, "Program Header");
-    foreach(QString item, elfPrgHeader.p_typeStringList)
+    foreach(QString item, GetPrgP_typeStringList())
     {
         AddChild(0, middleItem, item);
     }
     //Add Section Header Member in Name Widget
     middleItem = AddChild(0, topItem, "Section Header");
-    foreach(QString item, elfSeHeader.s_typeStringList)
+    foreach(QString item, GetSeP_typeStringList())
     {
         AddChild(0, middleItem, item);
     }
 
 }
+void MainWindow::SetEHeader()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        elf32Header->SetHeader(bufferPoint);
+        break;
 
+      case ELFCLASS64:
+        elf64Header->SetHeader(bufferPoint);
+        break;
+    }
+}
+void MainWindow::SetEHeaderMemberList()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        elf32Header->SetHeaderMemberList();
+        break;
 
+      case ELFCLASS64:
+        elf64Header->SetHeaderMemberList();
+        break;
+    }
+}
+void MainWindow::SetPrgHeader()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        elf32PrgHeader->SetHeader(bufferPoint, elf32Header->prgHeaderOffset, elf32Header->prgHeaderEntSize, elf32Header->prgHeaderNumber);
+        break;
+
+      case ELFCLASS64:
+        elf64PrgHeader->SetHeader(bufferPoint, elf64Header->prgHeaderOffset, elf64Header->prgHeaderEntSize, elf64Header->prgHeaderNumber);
+        break;
+    }
+}
+void MainWindow::SetPrgHeaderMemberList()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        elf32PrgHeader->SetHeaderMemberList();
+        break;
+
+      case ELFCLASS64:
+        elf64PrgHeader->SetHeaderMemberList();
+        break;
+    }
+
+}
+void MainWindow::SetSeHeader()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        elf32SeHeader->SetHeader(bufferPoint, elf32Header->seHeaderOffset, elf32Header->seHeaderEntSize, elf32Header->seHeaderNumber);
+        break;
+
+      case ELFCLASS64:
+        elf64SeHeader->SetHeader(bufferPoint, elf64Header->seHeaderOffset, elf64Header->seHeaderEntSize, elf64Header->seHeaderNumber);
+        break;
+    }
+}
+void MainWindow::SetSeHeaderMemberList()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        elf32SeHeader->SetHeaderMemberList();
+        break;
+
+      case ELFCLASS64:
+        elf64SeHeader->SetHeaderMemberList();
+        break;
+    }
+}
+QList<QString> MainWindow::GetPrgP_typeStringList()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32PrgHeader->p_typeStringList;
+
+      case ELFCLASS64:
+        return elf64PrgHeader->p_typeStringList;
+    }
+}
+QList<QString> MainWindow::GetSeP_typeStringList()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32SeHeader->s_typeStringList;
+
+      case ELFCLASS64:
+        return elf64SeHeader->s_typeStringList;
+    }
+}
+size_t MainWindow::GetHeaderOffset()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32Header->GetOffset();
+
+      case ELFCLASS64:
+        return elf64Header->GetOffset();
+    }
+}
+size_t MainWindow::GetPrgOffset()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32PrgHeader->GetOffset();
+
+      case ELFCLASS64:
+        return elf64PrgHeader->GetOffset();
+    }
+}
+size_t MainWindow::GetSeOffset()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32SeHeader->GetOffset();
+
+      case ELFCLASS64:
+        return elf64SeHeader->GetOffset();
+    }
+}
+QList<ElfDataType> MainWindow::GetPrgP_list(int row)
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32PrgHeader->p_list[row];
+
+      case ELFCLASS64:
+        return elf64PrgHeader->p_list[row];
+    }
+}
+QList<ElfDataType> MainWindow::GetSeS_list(int row)
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32SeHeader->s_list[row];
+
+      case ELFCLASS64:
+        return elf64SeHeader->s_list[row];
+    }
+}
+size_t MainWindow::GetPrgTotalSize()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32PrgHeader->GetTotalSize();
+
+      case ELFCLASS64:
+        return elf64PrgHeader->GetTotalSize();
+    }
+}
+size_t MainWindow::GetSeTotalSize()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32SeHeader->GetTotalSize();
+
+      case ELFCLASS64:
+        return elf64SeHeader->GetTotalSize();
+    }
+}
+QList<ElfDataType> MainWindow::GetHeaderMemberList()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return elf32Header->headerMemberList;
+
+      case ELFCLASS64:
+        return elf64Header->headerMemberList;
+    }
+}
+unsigned char* MainWindow::GetPrgPointer()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return (unsigned char*)elf32PrgHeader->GetHeader();
+
+      case ELFCLASS64:
+        return (unsigned char*)elf64PrgHeader->GetHeader();
+    }
+}
+
+unsigned char* MainWindow::GetSePointer()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        return (unsigned char*)elf32SeHeader->GetHeader();
+
+      case ELFCLASS64:
+        return (unsigned char*)elf64SeHeader->GetHeader();
+    }
+}
 //, char* &bufferPoint
 int MainWindow::ReadFile(char* filename)
 {
@@ -211,18 +423,18 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
             {
                 case HEA_TYPE:
                     //add value tree widget item
-                    foreach(ElfDataType item, elfHeader.headerMemberList)
+                    foreach(ElfDataType item, GetHeaderMemberList())
                     {
                         AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
                     }
                     break;
 
                 case PRG_TYPE:
-                    dumpcode((unsigned char*)elfPrgHeader.GetHeader(), elfPrgHeader.GetTotalSize(), elfPrgHeader.GetOffset());
+                    dumpcode(GetPrgPointer(), GetPrgTotalSize(), GetPrgOffset());
                     break;
 
                 case SE_TYPE:
-                    dumpcode((unsigned char*)elfSeHeader.GetHeader(), elfSeHeader.GetTotalSize(), elfSeHeader.GetOffset());
+                    dumpcode(GetSePointer(), GetSeTotalSize(), GetSeOffset());
                     break;
             }
             break;
@@ -238,7 +450,7 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
 
                 case PRG_TYPE:
                     //add value tree widget item
-                    foreach(ElfDataType item, elfPrgHeader.p_list[row])
+                    foreach(ElfDataType item, GetPrgP_list(row))
                     {
                         AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
                     }
@@ -246,7 +458,7 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
 
                 case SE_TYPE:
                     //add value tree widget item
-                    foreach(ElfDataType item, elfSeHeader.s_list[row])
+                    foreach(ElfDataType item, GetSeS_list(row))
                     {
                         AddRootValueWidget(ui->treeWidgetValue, item.memberOffset,  item.memberName, item.memberValue);
                     }
@@ -257,9 +469,12 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
     }
     else//all hex print
     {
-        dumpcode((unsigned char*)bufferPoint, fileSize, elfHeader.GetOffset());
+        dumpcode((unsigned char*)bufferPoint, fileSize, GetHeaderOffset());
     }
 }
+
+
+
 
 unsigned char MainWindow::printchar(unsigned char c)
 {
@@ -281,7 +496,12 @@ void MainWindow::dumpcode(unsigned char *buff, size_t len, size_t base)
     for(i=0;i<len;i++)
     {
       if(i%16==0)
-        offset.sprintf("0x%08x  ",i + base); //Offset output
+      {
+          if(bitInfo==ELFCLASS32)
+            offset.sprintf("0x%08x  ",i + base); //Offset output
+          else if(bitInfo==ELFCLASS64)
+            offset.sprintf("0x%016x  ",i + base); //Offset output
+      }
 
       temp.sprintf("%02x  ",buff[i]);
       hex.append(temp); //1 byte hex output

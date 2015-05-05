@@ -18,7 +18,8 @@ void ElfDataType::SetData(unsigned long _rawOffset, QString _memberName, unsigne
         memberOffset.sprintf("0x%08x",(unsigned int) _rawOffset);
         break;
       case ELFCLASS64:
-        memberOffset.sprintf("0x%08x%08x", *(((unsigned int*)(&_rawOffset))+1) ,(unsigned int)_rawOffset);
+        //memberOffset.sprintf("0x%08x%08x", *(((unsigned int*)(&_rawOffset))+1) ,(unsigned int)_rawOffset);
+        memberOffset.sprintf("0x%016x" ,(unsigned int)_rawOffset);
         break;
     }
 
@@ -34,7 +35,8 @@ void ElfDataType::SetData(unsigned long _rawOffset, QString _memberName, unsigne
         break;
 
       case 8:  //Data length  8byte
-        memberValue.sprintf("0x%08x%08x", *(((unsigned int*)(&_rawValue))+1) ,(unsigned int)_rawValue);
+        //memberValue.sprintf("0x%08x%08x", *(((unsigned int*)(&_rawValue))+1) ,(unsigned int)_rawValue);
+        memberValue.sprintf("0x%016x", (unsigned int)_rawValue);
         break;
 
       case EI_NIDENT:  //Data length 16byte

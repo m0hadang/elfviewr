@@ -31,7 +31,24 @@ public:
     void ValueWidgetColumnMemberMode();
     void dumpcode(unsigned char *buff, size_t len, size_t base);
     unsigned char  printchar(unsigned char c);
-
+    void SetEHeader();
+    void SetEHeaderMemberList();
+    void SetPrgHeader();
+    void SetPrgHeaderMemberList();
+    void SetSeHeader();
+    void SetSeHeaderMemberList();
+    QList<QString> GetPrgP_typeStringList();
+    QList<QString> GetSeP_typeStringList();
+    size_t GetHeaderOffset();
+    size_t GetPrgOffset();
+    size_t GetSeOffset();
+    QList<ElfDataType> GetPrgP_list(int row);
+    QList<ElfDataType> GetSeS_list(int row);
+    size_t GetPrgTotalSize();
+    size_t GetSeTotalSize();
+    QList<ElfDataType> GetHeaderMemberList();
+    unsigned char* GetPrgPointer();
+    unsigned char* GetSePointer();
 private slots:
     void on_treeWidgetName_itemSelectionChanged();
 
@@ -42,16 +59,15 @@ private slots:
 private:
     Ui::MainWindow *ui;
     char* bufferPoint;
+    int bitInfo;
     size_t fileSize;
-    ElfHeaderClass<Elf32_Ehdr> elfHeader;
-    ElfPrgHeaderClass<Elf32_Phdr> elfPrgHeader;
-    ElfSeHeaderClass<Elf32_Shdr> elfSeHeader;
-    ElfHeaderClass<Elf64_Ehdr> elf64Header;
-    ElfPrgHeaderClass<Elf64_Phdr> elf64PrgHeader;
-    ElfSeHeaderClass<Elf64_Shdr> elf64SeHeader;
+    ElfHeaderClass<Elf32_Ehdr>* elf32Header;
+    ElfPrgHeaderClass<Elf32_Phdr>* elf32PrgHeader;
+    ElfSeHeaderClass<Elf32_Shdr>* elf32SeHeader;
 
-    ElfHeaderClass<Elf32_Ehdr>* temp1;
-    ElfHeaderClass<Elf64_Ehdr>* temp2;
+    ElfHeaderClass<Elf64_Ehdr>* elf64Header;
+    ElfPrgHeaderClass<Elf64_Phdr>* elf64PrgHeader;
+    ElfSeHeaderClass<Elf64_Shdr>* elf64SeHeader;
 
     QString filePath;
     QString fileName;
