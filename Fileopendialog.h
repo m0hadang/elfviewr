@@ -7,6 +7,7 @@ namespace Ui {
 class FileOpenDialog;
 }
 
+//File Explorer
 class FileOpenDialog : public QDialog
 {
     Q_OBJECT

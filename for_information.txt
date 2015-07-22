@@ -1,0 +1,5 @@
+FILE INFO
+    Fileopendialog : Open file explore
+    mainwindow : main window
+    ElfDataType : is this program, member data type is saved by ElfDataType structure
+

@@ -4,12 +4,12 @@
 class ElfDataType
 {
 public :
-    QString memberOffset;
-    QString memberName;
-    QString memberValue;
-    int dataLen;
-    unsigned long rawOffset;
-    unsigned long rawValue;
+    QString memberOffset;//member offset for display (colum)
+    QString memberName;//member name for display (colum)
+    QString memberValue;//member value for display (colum)
+    int dataLen;//member data len
+    unsigned long rawOffset;//in dump memory pointer
+    unsigned long rawValue;//in dump memory value
 private :
     static int bitInfo;
 

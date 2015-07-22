@@ -35,7 +35,9 @@ class ElfPrgHeaderClass : public HeaderClass<ElfN_Phdr>
     //QList<ElfDataType> prgHeaderMemberList;
     ElfPrgHeaderClass();
     ~ElfPrgHeaderClass();
+    QString GetTypeString(u_int32_t type);
     void SetHeader(char* buffer,unsigned long e_phoff, uint16_t e_phentsize, uint16_t e_phnum);
+    void ClearHeaderMemberList();
     void SetHeaderMemberList();
     uint16_t prgHeaderNumber;
     QList<QString> p_typeStringList;
@@ -87,6 +89,13 @@ void ElfPrgHeaderClass<ElfN_Phdr>::SetHeader(char* buffer, unsigned long e_phoff
 }
 
 template<typename ElfN_Phdr>
+void ElfPrgHeaderClass<ElfN_Phdr>::ClearHeaderMemberList()
+{
+    p_typeStringList.clear();
+    p_list.clear();
+}
+
+template<typename ElfN_Phdr>
 void ElfPrgHeaderClass<ElfN_Phdr>::SetHeaderMemberList()
 {
   // Set Data : 1.Offset  2.Name  3.Value  4.data size 5.bitInfo
@@ -115,7 +124,8 @@ void ElfPrgHeaderClass<ElfN_Phdr>::SetHeaderMemberList()
     this->headerMemberList.append(p_flags);
     this->headerMemberList.append(p_align);
 
-    p_typeStr.sprintf("[%d] : %x", i, point->p_type);
+    QString str = GetTypeString(point->p_type);
+    p_typeStr.sprintf("[%d] : %s", i, str.toStdString().c_str());
     p_typeStringList.append(p_typeStr);
     p_list.append(this->headerMemberList);
 
@@ -123,6 +133,73 @@ void ElfPrgHeaderClass<ElfN_Phdr>::SetHeaderMemberList()
   }
 
   //dumpcode((unsigned char*)header, totalHeaderSize);
+}
+
+template<typename ElfN_Phdr>
+QString ElfPrgHeaderClass<ElfN_Phdr>::GetTypeString(u_int32_t type)
+{
+    QString str;
+    switch(type)
+    {
+        case PT_NULL         :/* Program header table entry unused */
+                str = "NULL";
+                break;
+        case PT_LOAD         :/* Loadable program segment */
+                str = "LOAD";
+                break;
+        case PT_DYNAMIC      :/* Dynamic linking information */
+                str = "DYNAMIC";
+                break;
+        case PT_INTERP       :/* Program interpreter */
+                str = "INTERP";
+                break;
+        case PT_NOTE         :/* Auxiliary information */
+                str =  "NOTE";
+                break;
+        case PT_SHLIB        :/* Reserved */
+                str =  "SHLIB";
+                break;
+        case PT_PHDR         :/* Entry for header table itself */
+                str =  "PHDR";
+                break;
+        case PT_TLS          :/* Thread-local storage segment */
+                str =  "TLS";
+                break;
+        case PT_NUM          :/* Number of defined types */
+                str =  "NUM";
+                break;
+        case PT_LOOS         :/* Start of OS-specific */
+                str =  "LOOS";
+                break;
+        case PT_GNU_EH_FRAME :/* GCC .eh_frame_hdr segment */
+                str =  "GNU_EH_FRAME";
+                break;
+        case PT_GNU_STACK    :/* Indicates stack executability */
+                str =  "GNU_STACK";
+                break;
+        case PT_GNU_RELRO    :/* Read-only after relocation */
+                str =  "GNU_RELRO";
+                break;
+        case PT_LOSUNW       :/* Sun Specific segment */
+                str =  "LOSUNW";
+                break;
+        case PT_SUNWSTACK    :/* Stack segment */
+                str =  "SUNWSTACK";
+                break;
+        case PT_HISUNW       :/* End of OS-specific */
+                str =  "HISUNW";
+                break;
+        case PT_LOPROC       :/* Start of processor-specific */
+                str =  "LOPROC";
+                break;
+        case PT_HIPROC       :/* End of processor-specific */
+                str =  "HIPROC";
+                break;
+        default         :/* UNKNOWN */
+                str =  "UNKNOWN";
+                break;
+    }
+    return str;
 }
 
 #endif // ELFPRGHEADERCLASS_H

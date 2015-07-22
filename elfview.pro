@@ -27,3 +27,6 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
     Fileopendialog.ui
+
+OTHER_FILES += \
+    for_information.txt

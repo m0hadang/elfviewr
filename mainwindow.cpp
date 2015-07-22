@@ -18,11 +18,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //32bit
+
+    //only one type is used
+    //32bit file type
     elf32Header = new ElfHeaderClass<Elf32_Ehdr>;
     elf32PrgHeader = new ElfPrgHeaderClass<Elf32_Phdr>;
     elf32SeHeader = new ElfSeHeaderClass<Elf32_Shdr>;
-    //64bit
+    //64bit file type
     elf64Header = new ElfHeaderClass<Elf64_Ehdr>;
     elf64PrgHeader = new ElfPrgHeaderClass<Elf64_Phdr>;
     elf64SeHeader = new ElfSeHeaderClass<Elf64_Shdr>;
@@ -33,7 +35,7 @@ MainWindow::~MainWindow()
     delete ui;
     free(bufferPoint);
 }
-
+//file dump memory load, bufferPointer point dump memory
 void MainWindow::LoadFile()
 {
     NameWidgetColumnMode();
@@ -44,7 +46,7 @@ void MainWindow::LoadFile()
         char* str = (char*)malloc(filePath.size()+2);
         memset(str,0,filePath.size()+2);
         memcpy(str, filePath.toStdString().c_str(), filePath.size()+2);
-        bitInfo = ReadFile(str);
+        bitInfo = ReadFile(str);//get file memory and file bit version
         free(str);
     } catch(...){
         QMessageBox::information(this, "File open error", "File open error");
@@ -67,8 +69,7 @@ void MainWindow::LoadFile()
         return;
     }
 
-    //init headers
-
+    //Setting headers
     SetEHeader();
     SetEHeaderMemberList();
     SetPrgHeader();
@@ -76,11 +77,14 @@ void MainWindow::LoadFile()
     SetSeHeader();
     SetSeHeaderMemberList();
 
+    //in tree widget, first add file name record
     QTreeWidgetItem* topItem;
     topItem = AddRootNameWidget(ui->treeWidgetName, fileName);
     ui->treeWidgetName->expandAll();
 
     //add name tree widget item
+
+    //add Header in Name Widget
     AddChild(0, topItem, "Header");
 
     //Add Program Header Member in Name Widget
@@ -89,6 +93,7 @@ void MainWindow::LoadFile()
     {
         AddChild(0, middleItem, item);
     }
+
     //Add Section Header Member in Name Widget
     middleItem = AddChild(0, topItem, "Section Header");
     foreach(QString item, GetSeP_typeStringList())
@@ -123,6 +128,20 @@ void MainWindow::SetEHeaderMemberList()
         break;
     }
 }
+void MainWindow::ClearEHeaderMemberList()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        elf32Header->ClearHeaderMemberList();
+        break;
+
+      case ELFCLASS64:
+        elf64Header->ClearHeaderMemberList();
+        break;
+    }
+}
+
 void MainWindow::SetPrgHeader()
 {
     switch(bitInfo)
@@ -136,6 +155,7 @@ void MainWindow::SetPrgHeader()
         break;
     }
 }
+
 void MainWindow::SetPrgHeaderMemberList()
 {
     switch(bitInfo)
@@ -150,6 +170,21 @@ void MainWindow::SetPrgHeaderMemberList()
     }
 
 }
+
+void MainWindow::ClearPrgHeaderMemberList()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        elf32PrgHeader->ClearHeaderMemberList();
+        break;
+
+      case ELFCLASS64:
+        elf64PrgHeader->ClearHeaderMemberList();
+        break;
+    }
+}
+
 void MainWindow::SetSeHeader()
 {
     switch(bitInfo)
@@ -173,6 +208,19 @@ void MainWindow::SetSeHeaderMemberList()
 
       case ELFCLASS64:
         elf64SeHeader->SetHeaderMemberList();
+        break;
+    }
+}
+void MainWindow::ClearSeHeaderMemberList()
+{
+    switch(bitInfo)
+    {
+      case ELFCLASS32:
+        elf32SeHeader->ClearHeaderMemberList();
+        break;
+
+      case ELFCLASS64:
+        elf64SeHeader->ClearHeaderMemberList();
         break;
     }
 }
@@ -276,7 +324,7 @@ size_t MainWindow::GetSeTotalSize()
     }
 }
 QList<ElfDataType> MainWindow::GetHeaderMemberList()
-{
+{    
     switch(bitInfo)
     {
       case ELFCLASS32:
@@ -284,7 +332,7 @@ QList<ElfDataType> MainWindow::GetHeaderMemberList()
 
       case ELFCLASS64:
         return elf64Header->headerMemberList;
-    }
+    }   
 }
 unsigned char* MainWindow::GetPrgPointer()
 {
@@ -321,16 +369,16 @@ int MainWindow::ReadFile(char* filename)
   }
 //GET FILE SIZE
   //size_t fileSize;
-  fseek(fp, 0, SEEK_END);
-  fileSize = ftell(fp);
-  rewind(fp);
+  fseek(fp, 0, SEEK_END);//move file pointer to end
+  fileSize = ftell(fp);//get file size
+  rewind(fp);//move file pointer to first
 
 
-  bufferPoint = (char*)malloc(sizeof(char)*fileSize);
+  bufferPoint = (char*)malloc(sizeof(char)*fileSize);//alloc memory for file
 //READ FILE
   size_t result;
   result = fread(bufferPoint,1,fileSize,fp);
-  if(result != fileSize)
+  if(result != fileSize)//if readed file size is different
   {
     fputs("Reading error", stderr);
     exit(3);
@@ -340,9 +388,7 @@ int MainWindow::ReadFile(char* filename)
   unsigned char e_ident[EI_NIDENT];
   memcpy((char*)&e_ident, bufferPoint, EI_NIDENT);
 
-  int bitInfo = e_ident[EI_CLASS];
-
-
+  int bitInfo = e_ident[EI_CLASS];//Get file bit version(64 ,32)
 
   //파일 헥스 덤프
   //dumpcode((unsigned char*)buffer,fileSize);
@@ -358,19 +404,19 @@ QTreeWidgetItem* MainWindow::AddRootNameWidget(QTreeWidget* view, QString name)
 
     return item;
 }
-
+//add root
 QTreeWidgetItem* MainWindow::AddRootValueWidget(QTreeWidget* view, QString left, QString center, QString right)
 {
 
     QTreeWidgetItem *item = new QTreeWidgetItem(view);
 
-    item->setText(0, left);
-    item->setText(1, center);
-    item->setText(2, right);
-    view->addTopLevelItem(item);
+    item->setText(0, left);//colum left setting
+    item->setText(1, center);//colum center setting
+    item->setText(2, right);//colum right setting
+    view->addTopLevelItem(item);//add item
     return item;
 }
-
+//add child
 QTreeWidgetItem* MainWindow::AddChild(int column, QTreeWidgetItem* parent, QString name)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem();
@@ -386,6 +432,7 @@ void MainWindow::NameWidgetColumnMode()
     ui->treeWidgetName->setHeaderLabel("NAME");
 }
 
+//display colum as Offset : Member : Value
 void MainWindow::ValueWidgetColumnMemberMode()
 {
     //setting value widget in Member Mode
@@ -395,6 +442,8 @@ void MainWindow::ValueWidgetColumnMemberMode()
     ui->treeWidgetValue->setColumnWidth(2,200);
     ui->treeWidgetValue->setHeaderLabels(QStringList() << "Offset" << "Member" << "Value");
 }
+
+//dispaly colum as Offset : Hex : Asci
 void MainWindow::ValueWidgetColumnHexMode()
 {
     //setting value widget in Hex Mode
@@ -408,8 +457,8 @@ void MainWindow::ValueWidgetColumnHexMode()
 void MainWindow::on_treeWidgetName_itemSelectionChanged()
 {
     ui->treeWidgetValue->clear();
-    const QModelIndex index = ui->treeWidgetName->currentIndex();
-    bool notRootItem = index.parent().isValid();
+    const QModelIndex index = ui->treeWidgetName->currentIndex();//focused row
+    bool notRootItem = index.parent().isValid();//if parent row is not exist than focus row is root
 
     int row = index.row();
     if(notRootItem)
@@ -418,7 +467,7 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
         switch(itemLevel)
         {
         case HEA_LEVEL:
-            ValueWidgetColumnHexMode();
+            ValueWidgetColumnHexMode();//change colum Hex mode
             switch(row)
             {
                 case HEA_TYPE:
@@ -440,11 +489,11 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
             break;
 
         case MEM_LEVEL:
-            ValueWidgetColumnMemberMode();
+            ValueWidgetColumnMemberMode();//change colum Member mode
             int headerType = index.parent().row();
             switch(headerType)
             {
-                case HEA_TYPE:
+                case HEA_TYPE://Header type has no member list
                 //EMPTRY
                     break;
 
@@ -469,6 +518,7 @@ void MainWindow::on_treeWidgetName_itemSelectionChanged()
     }
     else//all hex print
     {
+        ValueWidgetColumnHexMode();//change colum hex mode
         dumpcode((unsigned char*)bufferPoint, fileSize, GetHeaderOffset());
     }
 }
@@ -544,8 +594,13 @@ void MainWindow::on_actionOpen_triggered()
         QMessageBox::information(this, "NO FILE", "THE FILE IS NOT EXIST");
         return ;
     }
-    LoadFile();
+    ui->treeWidgetName->clear();
+    ui->treeWidgetValue->clear();
 
+    ClearEHeaderMemberList();
+    ClearPrgHeaderMemberList();
+    ClearSeHeaderMemberList();
+    LoadFile();
 }
 
 void MainWindow::on_actionExit_triggered()

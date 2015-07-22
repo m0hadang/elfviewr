@@ -46,6 +46,7 @@ class ElfHeaderClass : public HeaderClass<ElfN_Ehdr>
     ~ElfHeaderClass();
     void SetHeader(char* buffer);
     void SetHeaderMemberList();
+    void ClearHeaderMemberList();
     ElfN_Ehdr* GetHeader();
     size_t GetTotalSize();
     size_t GetOffset();
@@ -98,6 +99,12 @@ void ElfHeaderClass<ElfN_Ehdr>::SetHeader(char* buffer)
     seHeaderOffset = this->eHeader->e_shoff;
     seHeaderEntSize = this->eHeader->e_shentsize;
     seHeaderNumber = this->eHeader->e_shnum;
+}
+
+template<typename ElfN_Ehdr>
+void ElfHeaderClass<ElfN_Ehdr>::ClearHeaderMemberList()
+{
+    this->headerMemberList.clear();
 }
 
 template<typename ElfN_Ehdr>
